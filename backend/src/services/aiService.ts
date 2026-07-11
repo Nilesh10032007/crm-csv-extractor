@@ -98,7 +98,7 @@ export async function processCSVData(jobId: string, rawData: any[]) {
           jobId,
           { processedRows },
           records,
-          skipped,
+          skipped.map(s => ({ row: s.row, reason: s.reason || 'Unknown reason' })),
           []
         );
       } else {
