@@ -17,8 +17,8 @@ export default function HistoryPage() {
         if (!res.ok) throw new Error('Failed to fetch jobs');
         const data = await res.json();
         setJobs(data);
-      } catch (err: any) {
-        toast.error(err.message || 'Could not load import history');
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Could not load import history');
       } finally {
         setIsLoading(false);
       }
@@ -54,7 +54,7 @@ export default function HistoryPage() {
               </div>
               <h3 className="font-headline-md text-headline-md text-on-surface">No imports found</h3>
               <p className="text-on-surface-variant max-w-md">
-                You haven't run any imports yet. Head over to the CSV Importer to get started.
+                You haven&apos;t run any imports yet. Head over to the CSV Importer to get started.
               </p>
             </div>
           ) : (

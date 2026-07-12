@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { JobProgress, CrmRecord } from '@/types';
+import { CrmRecord } from '@/types';
 import { toast } from 'sonner';
 
 export default function LeadsPage() {
@@ -18,8 +18,8 @@ export default function LeadsPage() {
         if (!res.ok) throw new Error('Failed to fetch leads');
         const data = await res.json();
         setLeads(data);
-      } catch (err: any) {
-        toast.error(err.message || 'Could not load leads');
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : 'Could not load leads');
       } finally {
         setIsLoading(false);
       }
