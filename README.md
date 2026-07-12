@@ -28,7 +28,8 @@ GEMINI_API_KEY=your_gemini_key_here
 
 # --- BACKEND SETTINGS ---
 PORT=3001
-MONGODB_URI=mongodb+srv://your_username:your_password@cluster0.mongodb.net/crm_db?retryWrites=true&w=majority
+MONGODB_URI=db_url
+
 FRONTEND_URL=http://localhost:3000
 
 # --- FRONTEND SETTINGS ---
