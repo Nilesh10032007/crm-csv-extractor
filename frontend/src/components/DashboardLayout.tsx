@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { ThemeToggle } from './ThemeToggle';
+import Link from 'next/link';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -20,18 +21,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </div>
         
         <nav className="flex-1 px-4 mt-unit space-y-1">
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all bg-primary-container text-on-primary-container shadow-sm">
+          <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all hover:bg-surface-container-high hover:text-on-surface text-on-surface-variant">
             <span className="material-symbols-outlined">upload_file</span>
             <span className="font-label-md text-label-md">CSV Importer</span>
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all">
+          </Link>
+          <Link href="/leads" className="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all">
             <span className="material-symbols-outlined">group</span>
             <span className="font-label-md text-label-md">Lead Management</span>
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all">
+          </Link>
+          <Link href="/history" className="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all">
             <span className="material-symbols-outlined">history</span>
             <span className="font-label-md text-label-md">Import History</span>
-          </a>
+          </Link>
           <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all">
             <span className="material-symbols-outlined">settings</span>
             <span className="font-label-md text-label-md">Settings</span>

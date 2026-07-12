@@ -1,53 +1,93 @@
 import { JobProgress, CrmRecord } from '../types';
 import { Response } from 'express';
-
-const TTL_MS = 30 * 60 * 1000; // 30 minutes
+import Job from '../models/Job';
+import Lead from '../models/Lead';
 
 class JobManager {
-  private jobs = new Map<string, JobProgress>();
   private sseClients = new Map<string, Response[]>();
-  private timers = new Map<string, NodeJS.Timeout>();
 
-  createJob(jobId: string, totalRows: number) {
-    const job: JobProgress = {
+  async createJob(jobId: string, totalRows: number) {
+    const job = new Job({
       jobId,
       status: 'processing',
       totalRows,
       processedRows: 0,
-      successfulRecords: [],
       skippedRecords: [],
       errors: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
-    };
-    this.jobs.set(jobId, job);
-    this.resetTimer(jobId);
+    });
+    await job.save();
     return job;
   }
 
-  getJob(jobId: string): JobProgress | undefined {
-    return this.jobs.get(jobId);
+  async getJob(jobId: string): Promise<JobProgress | null> {
+    const jobDoc = await Job.findOne({ jobId }).lean();
+    if (!jobDoc) return null;
+    
+    // Fetch leads for this job
+    const leads = await Lead.find({ jobId }).lean();
+    
+    return {
+      jobId: jobDoc.jobId,
+      status: jobDoc.status as any,
+      totalRows: jobDoc.totalRows,
+      processedRows: jobDoc.processedRows,
+      successfulRecords: leads as any,
+      skippedRecords: jobDoc.skippedRecords,
+      errors: jobDoc.errors,
+      createdAt: jobDoc.createdAt,
+      updatedAt: jobDoc.updatedAt,
+    };
   }
 
-  updateJob(
+  async getAllJobs(): Promise<JobProgress[]> {
+    // Only return job summaries for getAllJobs (without successfulRecords to save bandwidth)
+    const jobs = await Job.find().sort({ createdAt: -1 }).lean();
+    return jobs.map(j => ({
+      jobId: j.jobId,
+      status: j.status as any,
+      totalRows: j.totalRows,
+      processedRows: j.processedRows,
+      successfulRecords: [], // Omitted for summary
+      skippedRecords: j.skippedRecords,
+      errors: j.errors,
+      createdAt: j.createdAt,
+      updatedAt: j.updatedAt,
+    }));
+  }
+
+  async updateJob(
     jobId: string,
     updates: Partial<Pick<JobProgress, 'processedRows' | 'status'>>,
     newRecords: CrmRecord[] = [],
     newSkipped: Array<{ row: any; reason: string }> = [],
     newErrors: string[] = []
   ) {
-    const job = this.jobs.get(jobId);
-    if (!job) return;
+    const updatePayload: any = { updatedAt: Date.now() };
+    if (updates.processedRows !== undefined) updatePayload.processedRows = updates.processedRows;
+    if (updates.status !== undefined) updatePayload.status = updates.status;
 
-    job.processedRows = updates.processedRows ?? job.processedRows;
-    job.status = updates.status ?? job.status;
-    job.successfulRecords.push(...newRecords);
-    job.skippedRecords.push(...newSkipped);
-    job.errors.push(...newErrors);
-    job.updatedAt = Date.now();
+    await Job.updateOne(
+      { jobId },
+      {
+        $set: updatePayload,
+        $push: {
+          skippedRecords: { $each: newSkipped },
+          errors: { $each: newErrors }
+        }
+      }
+    );
+
+    if (newRecords.length > 0) {
+      const leadsToInsert = newRecords.map(record => ({
+        ...record,
+        jobId
+      }));
+      await Lead.insertMany(leadsToInsert);
+    }
 
     this.broadcastUpdate(jobId);
-    this.resetTimer(jobId);
   }
 
   addSSEClient(jobId: string, res: Response) {
@@ -56,10 +96,11 @@ class JobManager {
     }
     this.sseClients.get(jobId)!.push(res);
     // Send immediate current state
-    const job = this.getJob(jobId);
-    if (job) {
-      res.write(`data: ${JSON.stringify(job)}\n\n`);
-    }
+    this.getJob(jobId).then(job => {
+      if (job) {
+        res.write(`data: ${JSON.stringify(job)}\n\n`);
+      }
+    }).catch(console.error);
   }
 
   removeSSEClient(jobId: string, res: Response) {
@@ -74,32 +115,15 @@ class JobManager {
     }
   }
 
-  private broadcastUpdate(jobId: string) {
-    const job = this.jobs.get(jobId);
-    if (!job) return;
-
+  private async broadcastUpdate(jobId: string) {
     const clients = this.sseClients.get(jobId);
-    if (clients) {
-      const payload = `data: ${JSON.stringify(job)}\n\n`;
-      clients.forEach(res => res.write(payload));
+    if (clients && clients.length > 0) {
+      const job = await this.getJob(jobId);
+      if (job) {
+        const payload = `data: ${JSON.stringify(job)}\n\n`;
+        clients.forEach(res => res.write(payload));
+      }
     }
-  }
-
-  private resetTimer(jobId: string) {
-    if (this.timers.has(jobId)) {
-      clearTimeout(this.timers.get(jobId)!);
-    }
-    const timer = setTimeout(() => {
-      this.cleanupJob(jobId);
-    }, TTL_MS);
-    this.timers.set(jobId, timer);
-  }
-
-  private cleanupJob(jobId: string) {
-    this.jobs.delete(jobId);
-    this.sseClients.delete(jobId);
-    this.timers.delete(jobId);
-    console.log(`Cleaned up job ${jobId} after TTL`);
   }
 }
 

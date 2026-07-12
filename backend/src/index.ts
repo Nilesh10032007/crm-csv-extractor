@@ -4,14 +4,25 @@ import multer from 'multer';
 import dotenv from 'dotenv';
 import { randomUUID } from 'crypto';
 import path from 'path';
+import mongoose from 'mongoose';
 import { parseCSVString } from './services/csvService';
 import { processCSVData } from './services/aiService';
 import { jobManager } from './services/jobManager';
+import Lead from './models/Lead';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const app = express();
 const port = process.env.PORT || 3001;
+
+// MongoDB Connection
+if (process.env.MONGODB_URI) {
+  mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
+} else {
+  console.warn('MONGODB_URI not found in .env');
+}
 
 // CORS configuration based on user feedback
 const allowedOrigins = [
@@ -59,12 +70,12 @@ app.post('/api/import', upload.single('file'), async (req, res) => {
     }
 
     const jobId = randomUUID();
-    jobManager.createJob(jobId, rawData.length);
+    await jobManager.createJob(jobId, rawData.length);
 
     // Start background processing
-    processCSVData(jobId, rawData).catch(err => {
+    processCSVData(jobId, rawData).catch(async err => {
       console.error(`Job ${jobId} failed completely:`, err);
-      jobManager.updateJob(jobId, { status: 'failed' }, [], [], [err.message]);
+      await jobManager.updateJob(jobId, { status: 'failed' }, [], [], [err.message]);
     });
 
     res.status(202).json({ jobId, message: 'File accepted for processing' });
@@ -73,9 +84,9 @@ app.post('/api/import', upload.single('file'), async (req, res) => {
   }
 });
 
-app.get('/api/import/:jobId/progress', (req, res) => {
+app.get('/api/import/:jobId/progress', async (req, res) => {
   const { jobId } = req.params;
-  const job = jobManager.getJob(jobId);
+  const job = await jobManager.getJob(jobId);
 
   if (!job) {
     return res.status(404).json({ error: 'Job not found' });
@@ -92,6 +103,37 @@ app.get('/api/import/:jobId/progress', (req, res) => {
   req.on('close', () => {
     jobManager.removeSSEClient(jobId, res);
   });
+});
+
+app.get('/api/jobs', async (req, res) => {
+  try {
+    const jobs = await jobManager.getAllJobs();
+    res.json(jobs);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/jobs/:jobId', async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const job = await jobManager.getJob(jobId);
+    if (!job) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+    res.json(job);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/leads', async (req, res) => {
+  try {
+    const leads = await Lead.find().sort({ createdAt: -1 }).lean();
+    res.json(leads);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.listen(port, () => {

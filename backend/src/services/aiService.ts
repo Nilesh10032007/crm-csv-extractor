@@ -14,8 +14,8 @@ function getGenAI() {
   return genAI;
 }
 
-const BATCH_SIZE = 15;
-const MAX_CONCURRENCY = 2;
+const BATCH_SIZE = 25; // Smaller batches for faster token generation
+const MAX_CONCURRENCY = 10; // High concurrency to process small batches in parallel
 const MAX_RETRIES = 2;
 
 function delay(ms: number) {
@@ -42,7 +42,7 @@ function repairAndParseJSON(rawText: string): BatchResult {
 async function processBatchWithRetry(batch: any[], retryCount = 0): Promise<BatchResult> {
   try {
     const model = getGenAI().getGenerativeModel({
-      model: 'gemini-flash-latest',
+      model: 'gemini-3.5-flash',
       generationConfig: {
         temperature: 0.1,
         responseMimeType: 'application/json',
@@ -70,7 +70,7 @@ async function processBatchWithRetry(batch: any[], retryCount = 0): Promise<Batc
 
 export async function processCSVData(jobId: string, rawData: any[]) {
   const totalRows = rawData.length;
-  jobManager.updateJob(jobId, { status: 'processing', processedRows: 0 });
+  await jobManager.updateJob(jobId, { status: 'processing', processedRows: 0 });
 
   const batches = [];
   for (let i = 0; i < totalRows; i += BATCH_SIZE) {
@@ -94,7 +94,7 @@ export async function processCSVData(jobId: string, rawData: any[]) {
 
       if (result.status === 'fulfilled') {
         const { records, skipped } = result.value;
-        jobManager.updateJob(
+        await jobManager.updateJob(
           jobId,
           { processedRows },
           records,
@@ -102,7 +102,7 @@ export async function processCSVData(jobId: string, rawData: any[]) {
           []
         );
       } else {
-        jobManager.updateJob(
+        await jobManager.updateJob(
           jobId,
           { processedRows },
           [],
@@ -112,9 +112,9 @@ export async function processCSVData(jobId: string, rawData: any[]) {
       }
     }
     
-    // Slight delay between concurrency bursts to be safe
-    await delay(1000);
+    // Slight delay between concurrency bursts to avoid hitting rate limits too quickly
+    await delay(200);
   }
 
-  jobManager.updateJob(jobId, { status: 'completed' });
+  await jobManager.updateJob(jobId, { status: 'completed' });
 }

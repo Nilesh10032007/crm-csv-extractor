@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { JobProgress } from '../types';
+import Link from 'next/link';
 
 interface ResultsTableProps {
   job: JobProgress;
@@ -33,10 +34,10 @@ export function ResultsTable({ job }: ResultsTableProps) {
           </p>
         </div>
         <div className="relative z-10 flex flex-wrap gap-4">
-          <button className="px-8 py-4 bg-vibrant-cyan text-on-secondary-fixed rounded-full font-label-md text-label-md flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all">
+          <Link href="/leads" className="px-8 py-4 bg-vibrant-cyan text-on-secondary-fixed rounded-full font-label-md text-label-md flex items-center gap-2 hover:shadow-lg hover:scale-105 transition-all">
             <span className="material-symbols-outlined">group</span>
             Go to Lead Management
-          </button>
+          </Link>
           <button 
             className="px-8 py-4 bg-primary-container text-on-primary-container rounded-full font-label-md text-label-md flex items-center gap-2 hover:bg-surface-container-highest transition-all"
             onClick={() => window.location.reload()}
