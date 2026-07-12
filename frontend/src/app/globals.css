@@ -71,52 +71,52 @@
   }
 
   .dark {
-    --background: #0a0f1a;
-    --on-background: #e2eaf5;
-    --surface: #0a0f1a;
-    --on-surface: #e2eaf5;
-    --surface-variant: #1e2a3c;
-    --on-surface-variant: #b0b4c4;
+    --background: #09090b;
+    --on-background: #fafafa;
+    --surface: #09090b;
+    --on-surface: #fafafa;
+    --surface-variant: #27272a;
+    --on-surface-variant: #a1a1aa;
     
     --surface-container-lowest: #000000;
-    --surface-container-low: #0f1623;
-    --surface-container: #161e2e;
-    --surface-container-high: #1c2738;
-    --surface-container-highest: #233045;
-    --surface-bright: #1c2738;
-    --surface-dim: #0a0f1a;
+    --surface-container-low: #09090b;
+    --surface-container: #18181b;
+    --surface-container-high: #27272a;
+    --surface-container-highest: #3f3f46;
+    --surface-bright: #27272a;
+    --surface-dim: #09090b;
 
-    --primary: #bac2ff;
-    --on-primary: #001257;
-    --primary-container: #1e35d0;
-    --on-primary-container: #e0e0ff;
+    --primary: #3b82f6;
+    --on-primary: #ffffff;
+    --primary-container: #1d4ed8;
+    --on-primary-container: #dbeafe;
     
-    --secondary: #4cd9e8;
-    --on-secondary: #00363d;
-    --secondary-container: #004f58;
-    --on-secondary-container: #9cf0ff;
+    --secondary: #06b6d4;
+    --on-secondary: #000000;
+    --secondary-container: #0891b2;
+    --on-secondary-container: #cffafe;
     
-    --tertiary: #a0d8cd;
-    --on-tertiary: #003730;
-    --tertiary-container: #17564e;
-    --on-tertiary-container: #bcece1;
+    --tertiary: #10b981;
+    --on-tertiary: #000000;
+    --tertiary-container: #059669;
+    --on-tertiary-container: #d1fae5;
     
-    --error: #ffb4ab;
-    --on-error: #690005;
-    --error-container: #93000a;
-    --on-error-container: #ffdad6;
+    --error: #ef4444;
+    --on-error: #ffffff;
+    --error-container: #991b1b;
+    --on-error-container: #fee2e2;
     
-    --outline: #8c8d9e;
-    --outline-variant: #444655;
+    --outline: #52525b;
+    --outline-variant: #3f3f46;
     
-    --action-indigo: #bac2ff;
-    --vibrant-cyan: #00E5FF;
-    --brand-orange: #FF8F66;
+    --action-indigo: #6366f1;
+    --vibrant-cyan: #22d3ee;
+    --brand-orange: #f97316;
 
-    --secondary-fixed: #9cf0ff;
-    --on-secondary-fixed: #001f24;
-    --tertiary-fixed: #b2eee3;
-    --on-tertiary-fixed: #00201c;
+    --secondary-fixed: #cffafe;
+    --on-secondary-fixed: #083344;
+    --tertiary-fixed: #d1fae5;
+    --on-tertiary-fixed: #022c22;
   }
 }
 
