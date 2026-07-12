@@ -13,7 +13,7 @@ class JobManager {
       totalRows,
       processedRows: 0,
       skippedRecords: [],
-      errors: [],
+      jobErrors: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -35,7 +35,7 @@ class JobManager {
       processedRows: jobDoc.processedRows,
       successfulRecords: leads as any,
       skippedRecords: jobDoc.skippedRecords,
-      errors: jobDoc.errors,
+      errors: jobDoc.jobErrors || [],
       createdAt: jobDoc.createdAt,
       updatedAt: jobDoc.updatedAt,
     };
@@ -51,7 +51,7 @@ class JobManager {
       processedRows: j.processedRows,
       successfulRecords: [], // Omitted for summary
       skippedRecords: j.skippedRecords,
-      errors: j.errors,
+      errors: j.jobErrors || [],
       createdAt: j.createdAt,
       updatedAt: j.updatedAt,
     }));
@@ -74,7 +74,7 @@ class JobManager {
         $set: updatePayload,
         $push: {
           skippedRecords: { $each: newSkipped },
-          errors: { $each: newErrors }
+          jobErrors: { $each: newErrors }
         }
       }
     );

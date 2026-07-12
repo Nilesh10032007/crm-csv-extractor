@@ -6,7 +6,7 @@ export interface IJob extends Document {
   totalRows: number;
   processedRows: number;
   skippedRecords: Array<{ row: any; reason: string }>;
-  errors: string[];
+  jobErrors: string[];
   createdAt: number;
   updatedAt: number;
 }
@@ -17,7 +17,7 @@ const JobSchema: Schema = new Schema({
   totalRows: { type: Number, default: 0 },
   processedRows: { type: Number, default: 0 },
   skippedRecords: { type: Array, default: [] },
-  errors: { type: Array, default: [] },
+  jobErrors: { type: Array, default: [] },
   createdAt: { type: Number, default: () => Date.now() },
   updatedAt: { type: Number, default: () => Date.now() }
 }, {
